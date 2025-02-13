@@ -9,6 +9,6 @@ def index():
 
     if request.method == "GET":
 
-        x = "HOW ABOUT NOW"
+        x = "HOW ABOUT NOWAA"
 
         return render_template("index.html", x=x)
