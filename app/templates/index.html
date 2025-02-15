@@ -1,7 +1,22 @@
 {% extends "layout.html" %}
 
+{% block head %}
+    NGS analysis
+{% endblock %}
+
+
 {% block body %}
    <div>
-      <h1>{{ x }}</h1>
+      <h1>{{ project_title }}</h1>
+
+      <h2>Available pipelines:</h2>
+   </div>
+   <div>
+      
+      <ul class="list-group">
+         {% for option in options %}
+            <li class="list-group-item">{{ option }}</li>
+         {% endfor %}
+       </ul>
    </div>
 {% endblock %}

@@ -1,0 +1,14 @@
+CREATE TABLE dna (
+    id INTEGER PRIMARY KEY NOT NULL UNIQUE,
+    prefix TEXT NOT NULL,
+    sequence TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY NOT NULL UNIQUE,
+    username TEXT NOT NULL,
+    password TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+);
