@@ -150,35 +150,29 @@ def DNAtoPROTEIN():
 @login_required
 def upload():
 
-    # function that saves the uploaded file to temp and adds it to the database
-
     if request.method == "GET":
 
         return render_template("upload.html")
     
     else:
 
-        # save the file to temp
         seq = request.files['upload']
 
-        path = r"temp/{}".format(seq.filename)
+        # check if the file is indeed in .fasta or .fastq format
+        if seq.filename[-5:] not in ['fasta', 'fastq']:
+            return sorry(text="Please provide a proper FASTA/FASTQ file")
 
-        # for line in seq.readlines():
-        #     print(line)
+        # save the file to temp
+        path = r"temp/{}".format(seq.filename)
 
         if seq.filename != '':
 
             seq.save(path)
-        
-        else:
-
-            return render_template("upload.html")
 
         # save the file to db
         dbCheck = seqtoDB(path)
-        print(dbCheck)
 
-        # database check
+        # output check
         if dbCheck != None:
             return sorry(text=dbCheck)
 

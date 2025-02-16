@@ -25,6 +25,7 @@ def login_required(f):
 
     return decorated_function
 
+# function that saves the uploaded file to temp and adds it to the database
 def seqtoDB(file):
 
     prefix = ''
@@ -38,7 +39,12 @@ def seqtoDB(file):
             if line.startswith(">") or line.startswith("@"):
 
                 prefix += line
-            
+
+            # catching not properly formatted first line
+            elif prefix == '':
+
+                return("This is not a proper file format, please provide a FASTA or FASTQ file in a proper format!")
+
             else:
 
                 data += line
