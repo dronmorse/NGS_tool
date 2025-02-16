@@ -2,9 +2,10 @@
 
 from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
-from helper import sorry, login_required
+from helper import sorry, login_required, seqtoDB
 import sqlite3
 from werkzeug.security import check_password_hash, generate_password_hash
+import os
 
 
 # starting flask app
@@ -18,6 +19,16 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
+@app.after_request
+def after_request(response):
+
+    # Ensure responses aren't cached
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+
+    return response
+
 @app.route('/', methods=['GET'])
 @login_required
 def index():
@@ -26,24 +37,10 @@ def index():
 
         # set name of the project and available pipelines
         project_title = "Welcome to DNA analysis tool!"
-        options = ["What does your DNA encode?"]
+        options = (("/DNAtoPROTEIN", "What does your DNA encode?"),)
 
         return render_template("index.html", project_title=project_title, options=options)
 
-
-@app.route('/upload', methods=['GET', 'POST'])
-@login_required
-def upload():
-
-    # TODO
-
-    if request.method == "GET":
-
-        return render_template("upload.html")
-    
-    else:
-
-        return sorry(text="This page does not exist yet :(")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -76,12 +73,22 @@ def register():
 
             return render_template("login.html")
 
-        except ValueError:
+        except sqlite3.IntegrityError:
 
             return sorry("Username already exists!")
 
     else:
         return render_template("register.html")
+
+@app.route("/logout")
+def logout():
+    """Log user out"""
+
+    # Forget any user_id
+    session.clear()
+
+    # Redirect user to login form
+    return redirect("/login")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -90,7 +97,7 @@ def login():
     # Forget any user_id
     session.clear()
 
-    # User reached route via POST (as by submitting a form via POST)
+    # User reached route via POST
     if request.method == "POST":
 
         # Ensure username was submitted
@@ -105,29 +112,77 @@ def login():
         con = sqlite3.connect("data.db")
         db = con.cursor()
         
-        # Query database for username
+        # Query database for username and save the outcome in a variable
         rows = db.execute(
             "SELECT * FROM users WHERE username = ?", (request.form.get("username"),)
         )
-
-        print(list(rows))
+        rowsOut = list(rows)
 
         # Ensure username exists and password is correct
-        if len(list(rows)) != 1 or not check_password_hash(
-            rows[0][2], request.form.get("password")):
+        if len(list(rowsOut)) != 1 or not check_password_hash(
+            list(rowsOut)[0][2], request.form.get("password")):
 
             con.close()
             
             return sorry("invalid username and/or password", 403)
 
         # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+        session["user_id"] = list(rowsOut)[0][0]
 
         con.close()
 
         # Redirect user to home page
         return redirect("/")
 
-    # User reached route via GET (as by clicking a link or via redirect)
+    # User reached route via GET
     else:
         return render_template("login.html")
+    
+@app.route('/DNAtoPROTEIN', methods=['GET'])
+@login_required
+def DNAtoPROTEIN():
+
+    if request.method == "GET":
+
+        return render_template("DNAtoPROTEIN.html")
+
+@app.route('/upload', methods=['GET', 'POST'])
+@login_required
+def upload():
+
+    # function that saves the uploaded file to temp and adds it to the database
+
+    if request.method == "GET":
+
+        return render_template("upload.html")
+    
+    else:
+
+        # save the file to temp
+        seq = request.files['upload']
+
+        path = r"temp/{}".format(seq.filename)
+
+        # for line in seq.readlines():
+        #     print(line)
+
+        if seq.filename != '':
+
+            seq.save(path)
+        
+        else:
+
+            return render_template("upload.html")
+
+        # save the file to db
+        dbCheck = seqtoDB(path)
+        print(dbCheck)
+
+        # database check
+        if dbCheck != None:
+            return sorry(text=dbCheck)
+
+        # drop the temp file
+        os.remove(path)
+
+        return sorry(text="This page does not exist yet :(")

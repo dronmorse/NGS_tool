@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    What does your DNA encode?
+{% endblock %}
+
+
+{% block body %}
+    <h1>What does your DNA encode?</h1>
+
+    <p>
+        Do you have a FASTA file without a proper header? Maybe you have found an old DNA sequence on your hard drive that you have no idea what it encodes?
+        Do not look any further! This pipeline: 
+    </p>
+    <ul>
+        <li>takes a FASTQ file as input or performs a test using one of the saved FASTQ files. Saves the data into a local database for later usage.</li>
+        <ul>
+            <li>One can also choose FASTA over FASTQ, but then the Quality Control step is entirely  bypassed</li>
+        </ul>
+        <li> performs Quality Control using FastQC and returns a report. Allows the user to retrieve the report and make a decision if the final Quality is sufficient to proceed with the calculation.</li>
+        <li>Reads the ORFs and returns the corresponding protein sequences. If no ORF is found, provided fragment is translated left to right in an effort to find a possible protein structure. The user will be asked to choose a protein sequence of interest. It is possible to check is sequence one by one.</li>
+        <li>The protein sequence gets annotated with functional and structrual infromation. </li>
+        <li>The final sequence is uploaded to NCBI BLASTP server for homology assessment and a report is returned with a possible protein which is encoded by the input.</li>
+    </ul>
+
+    <h2>Upload a FASTQ/FASTA file or choose one from a database</h2>
+
+
+    <div class="container">
+        <div class="row space-above">
+          <div class="col">
+            <form action="/upload" method="GET">
+                <input type="hidden" name="upload">
+                <button class="btn btn-primary btn-lg" type="submit">upload FASTA or FASTQ file</button>
+            </form>
+          </div>
+          <div class="col">
+            <form action="/browseseq" method="GET">
+                <input type="hidden" name="browseseq">
+                <button class="btn btn-primary btn-lg" type="submit">Choose from the database...</button>
+            </form>
+          </div>
+          <div class="col">
+            <form action="/" method="GET" >
+                <input type="hidden" name="home">
+                <button class="btn btn-primary btn-lg" type="submit">Take me back to the home page</button>
+            </form>
+          </div>
+        </div>
+    </div>
+
+{% endblock %}
