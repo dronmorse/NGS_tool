@@ -174,6 +174,10 @@ def upload():
 
         # output check
         if dbCheck != None:
+
+            # drop the temp file
+            os.remove(path)
+            
             return sorry(text=dbCheck)
 
         # drop the temp file
