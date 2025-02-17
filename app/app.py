@@ -2,11 +2,10 @@
 
 from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
-from helper import sorry, login_required, seqtoDB
+from helper import sorry, login_required, seqtoDB, delete_files_in_directory
 import sqlite3
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
-
 
 # starting flask app
 app = Flask(__name__)
@@ -142,6 +141,7 @@ def login():
 @login_required
 def DNAtoPROTEIN():
 
+    # render a welcome page for "What does you DNA encode?" pipeline
     if request.method == "GET":
 
         return render_template("DNAtoPROTEIN.html")
@@ -166,7 +166,9 @@ def upload():
         path = r"temp/{}".format(seq.filename)
 
         if seq.filename != '':
-
+            
+            # delete everything from prevous sessions and create a new file
+            delete_files_in_directory(r"temp")
             seq.save(path)
 
         # save the file to db
@@ -180,7 +182,58 @@ def upload():
             
             return sorry(text=dbCheck)
 
-        # drop the temp file
-        os.remove(path)
+        return redirect("/inputOverview")
 
-        return sorry(text="This page does not exist yet :(")
+@app.route("/browseseq", methods=["GET", "POST"])
+@login_required
+def chooseDatabase():
+    
+    if request.method == "POST":
+
+        # enable sqlite database
+        con = sqlite3.connect("data.db")
+        db = con.cursor()
+
+        # fetch data from database
+        rowTemp = db.execute("SELECT prefix, content FROM seq WHERE id = ?;", (request.form.get("id"),))
+        row = list(rowTemp)
+
+        # close the connection
+        con.close()
+
+        # delete everything from prevous sessions and create a new file
+        delete_files_in_directory(r"temp")
+
+        with open(r"temp/temp.{}".format(request.form.get("filetype")), "a") as f:
+
+            # save data to file and to output string
+            f.write(row[0][0])
+            f.write(row[0][1])
+
+        return redirect("/inputOverview")
+    
+    else:
+
+        # enable sqlite database
+        con = sqlite3.connect("data.db")
+        db = con.cursor()
+
+        # fetch data from database
+        rows = db.execute("SELECT id, prefix, content, filetype FROM seq;")
+        rowsList = list(rows)
+
+        # close the connection
+        con.close()
+
+        return render_template("browseseq.html", rowsList=rowsList)
+
+@app.route("/inputOverview", methods=["GET", "POST"])
+@login_required
+def inputOverview():
+
+    if request.method == "POST":
+        return sorry('')
+    
+    else:
+
+        return sorry('')

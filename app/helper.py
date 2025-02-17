@@ -2,6 +2,7 @@
 
 from flask import render_template, session, redirect
 from functools import wraps
+import os
 import sqlite3
 
 # placeholder render for future sections
@@ -67,3 +68,23 @@ def seqtoDB(file):
 
     # close connection
     con.close()
+
+# clearing a directory, e.g. temp
+def delete_files_in_directory(directory_path):
+   try:
+     
+     files = os.listdir(directory_path)
+
+     for file in files:
+       
+       file_path = os.path.join(directory_path, file)
+
+       if os.path.isfile(file_path):
+         
+         os.remove(file_path)
+
+     print("All files deleted successfully.")
+
+   except OSError:
+     
+     print("Error occurred while deleting files.")
