@@ -2,8 +2,8 @@
 
 from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
-from helper import sorry, login_required, seqtoDB, delete_files_in_directory
 import sqlite3
+from helper import sorry, login_required, seqtoDB, delete_files_in_directory
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
 
@@ -206,7 +206,7 @@ def chooseDatabase():
 
         with open(r"temp/temp.{}".format(request.form.get("filetype")), "a") as f:
 
-            # save data to file and to output string
+            # save data to file
             f.write(row[0][0])
             f.write(row[0][1])
 
@@ -232,8 +232,50 @@ def chooseDatabase():
 def inputOverview():
 
     if request.method == "POST":
+
         return sorry('')
     
     else:
+        
+        # prepare necessary variables
+        workFile = r"{}\temp\{}".format(os.getcwd(), os.listdir(r"temp/")[0])
+        pageChoice = 'fastq' if os.listdir(r"temp/")[0][-5:] == "fastq" else "fasta"
+        firstChar = "@" if os.listdir(r"temp/")[0][-5:] == "fastq" else ">"
 
-        return sorry('')
+        fastxReadList = []
+        header = ''
+        data = ''
+                        
+        # read each fasta read into memory
+        with open(workFile, 'r') as f:
+
+            for line in f.readlines():
+
+                if line.startswith(firstChar):
+
+                    # dump the read into a dict if the header exists
+                    if header != '':
+                        
+                        read = [header, data]
+                        fastxReadList.append(read)
+
+                    # clear data when new header is found
+                    data = ''
+
+                    # replace old header with a new one
+                    header = line
+                
+                else:
+                    
+                    # append the line to data
+                    data += line
+            
+        # dump the last read into the dict
+        read = [header, data]
+        fastxReadList.append(read)
+
+        print(fastxReadList)
+
+
+        # render template that shows the quality control check and all the required info    
+        return render_template("inputOverview.html", fastxReadList=fastxReadList, pageChoice=pageChoice)       

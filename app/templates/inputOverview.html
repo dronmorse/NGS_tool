@@ -6,7 +6,31 @@
 
 
 {% block body %}
-    <h1>Make sure the input file looks as it should</h1>
+    <h1>Choose the read you want to use for further analysis </h1>
+    <h3>If your file has only one read, choose it and continue</h3>
+
+    <div class="accordion" id="accordion">
+        {% for read in fastxReadList %}
+          
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#{{ loop.index }}" aria-expanded="true" aria-controls="{{ loop.index }}">
+                <strong>{{ read[0] }}</strong>
+              </button>
+            </h2>
+            <div id="{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#accordion">
+              <div class="accordion-body">
+                <form action="/inputOverview" method="POST">
+                  <input type="hidden" id="{{ read[0] }}" name="header" value="{{ read[0] }}">
+                  <input type="hidden" id="{{ read[1] }}" name="content" value="{{ read[1] }}">
+                  <button class="btn btn-primary" type="submit">Pick this read</button>
+                </form>
+                {{ read[1] }} 
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
 
 
 {% endblock %}

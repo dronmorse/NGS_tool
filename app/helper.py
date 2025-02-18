@@ -2,8 +2,9 @@
 
 from flask import render_template, session, redirect
 from functools import wraps
+# import Bio
 import os
-import sqlite3
+import aiosqlite
 
 # placeholder render for future sections
 def sorry(text, code=400):
@@ -33,12 +34,14 @@ def seqtoDB(file):
     data = ''
     filetype = "fasta" if file[-5:] == "fasta" else "fastq"
 
-    # fetch data from the file
+    # fetch data from the file - accepting only one header
+    header = True
     with open(file, 'r') as f:
         for line in f.readlines():
 
-            if line.startswith(">") or line.startswith("@"):
+            if (line.startswith(">") or line.startswith("@")) and header:
 
+                header = False
                 prefix += line
 
             # catching not properly formatted first line
@@ -51,7 +54,7 @@ def seqtoDB(file):
                 data += line
     
     # enable sqlite database
-    con = sqlite3.connect("data.db")
+    con = aiosqlite.connect("data.db")
     db = con.cursor()
 
     # check if the sequence has been already added to the database
