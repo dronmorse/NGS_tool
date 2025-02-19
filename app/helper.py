@@ -94,7 +94,6 @@ def delete_files_in_directory(directory_path):
 # build path from chosen read
 def buildInputFile(path, prefix, data, filetype, name="inputFile"):
    
-   with open(rf"{path}/{name}.{filetype}", "a") as f:
-
-    f.write(prefix)
-    f.write(data)
+    with open(rf"{path}/{name}.{filetype}", "a") as f:
+        f.write(prefix)
+        f.write(data)

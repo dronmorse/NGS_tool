@@ -7,6 +7,8 @@ from helper import sorry, login_required, seqtoDB, delete_files_in_directory, bu
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
 
+# command to run the server: flask --debug run --exclude-patterns temp/*
+
 # starting flask app
 app = Flask(__name__)
 
@@ -285,7 +287,7 @@ def inputOverview():
     else:
         
         # prepare necessary variables
-        workFile = r"{}\temp\{}".format(os.getcwd(), os.listdir(r"temp/")[0])
+        workFile = r"{}/temp/{}".format(os.getcwd(), os.listdir(r"temp/")[0])
         pageChoice = 'fastq' if os.listdir(r"temp/")[0][-5:] == "fastq" else "fasta"
         firstChar = "@" if os.listdir(r"temp/")[0][-5:] == "fastq" else ">"
 
