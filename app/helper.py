@@ -2,7 +2,7 @@
 
 from flask import render_template, session, redirect
 from functools import wraps
-# import Bio
+import Bio
 import os
 import sqlite3
 
@@ -95,5 +95,6 @@ def delete_files_in_directory(directory_path):
 def buildInputFile(path, prefix, data, filetype, name="inputFile"):
    
    with open(rf"{path}/{name}.{filetype}", "a") as f:
-      f.write(prefix)
-      f.write(data)
+
+    f.write(prefix)
+    f.write(data)
