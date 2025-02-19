@@ -23,9 +23,12 @@
                 <form action="/inputOverview" method="POST">
                   <input type="hidden" id="{{ read[0] }}" name="header" value="{{ read[0] }}">
                   <input type="hidden" id="{{ read[1] }}" name="content" value="{{ read[1] }}">
+                  <input type="hidden" id="{{ pageChoice }}" name="pageChoice" value="{{ pageChoice }}">
                   <button class="btn btn-primary" type="submit">Pick this read</button>
                 </form>
-                {{ read[1] }} 
+                <div class="honor-newline">
+                  {{ read[1] }}
+                </div>
               </div>
             </div>
           </div>

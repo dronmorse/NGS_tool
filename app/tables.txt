@@ -1,6 +1,6 @@
 CREATE TABLE seq (
     id INTEGER PRIMARY KEY NOT NULL UNIQUE,
-    prefix TEXT NOT NULL,
+    name TEXT NOT NULL,
     content TEXT NOT NULL,
     filetype TEXT NOT NULL,
     user_id INTEGER NOT NULL,

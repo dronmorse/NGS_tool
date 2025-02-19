@@ -3,7 +3,7 @@
 from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
 import sqlite3
-from helper import sorry, login_required, seqtoDB, delete_files_in_directory
+from helper import sorry, login_required, seqtoDB, delete_files_in_directory, buildInputFile
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
 
@@ -136,7 +136,44 @@ def login():
     # User reached route via GET
     else:
         return render_template("login.html")
-    
+
+@app.route("/managedb", methods=['GET', 'POST'])
+@login_required
+def managedb():
+
+    if request.method == "POST":
+
+        # fetch id
+        id = request.form.get("id")
+        
+        # connect to database
+        con = sqlite3.connect("data.db")
+        db = con.cursor()
+
+        # remove given entry
+        db.execute("DELETE FROM seq WHERE id = ?;", (id,))
+        con.commit()
+
+        # close conection
+        con.close()
+
+        return redirect("/managedb")
+
+    else:
+
+        # connect to a database
+        con = sqlite3.connect("data.db")
+        db = con.cursor()
+        
+        # fetch and save the data
+        rows = db.execute("SELECT id, name, content, filetype FROM seq WHERE user_id = ?", (session["user_id"],))
+        rowsList = list(rows)
+
+        # close the connection
+        con.close()
+
+        return render_template("managedb.html", rowsList=rowsList)
+
 @app.route('/DNAtoPROTEIN', methods=['GET'])
 @login_required
 def DNAtoPROTEIN():
@@ -150,11 +187,7 @@ def DNAtoPROTEIN():
 @login_required
 def upload():
 
-    if request.method == "GET":
-
-        return render_template("upload.html")
-    
-    else:
+    if request.method == "POST":
 
         seq = request.files['upload']
 
@@ -171,18 +204,14 @@ def upload():
             delete_files_in_directory(r"temp")
             seq.save(path)
 
-        # save the file to db
-        dbCheck = seqtoDB(path)
-
-        # output check
-        if dbCheck != None:
-
-            # drop the temp file
-            os.remove(path)
-            
-            return sorry(text=dbCheck)
+        # save the file to db - if file is in db, save step is skipped
+        seqtoDB(path, seq.filename, session["user_id"])
 
         return redirect("/inputOverview")
+    
+    else:
+
+        return render_template("upload.html") 
 
 @app.route("/browseseq", methods=["GET", "POST"])
 @login_required
@@ -195,7 +224,7 @@ def chooseDatabase():
         db = con.cursor()
 
         # fetch data from database
-        rowTemp = db.execute("SELECT prefix, content FROM seq WHERE id = ?;", (request.form.get("id"),))
+        rowTemp = db.execute("SELECT content FROM seq WHERE id = ?;", (request.form.get("id"),))
         row = list(rowTemp)
 
         # close the connection
@@ -208,7 +237,6 @@ def chooseDatabase():
 
             # save data to file
             f.write(row[0][0])
-            f.write(row[0][1])
 
         return redirect("/inputOverview")
     
@@ -219,7 +247,7 @@ def chooseDatabase():
         db = con.cursor()
 
         # fetch data from database
-        rows = db.execute("SELECT id, prefix, content, filetype FROM seq;")
+        rows = db.execute("SELECT id, name, content, filetype FROM seq;")
         rowsList = list(rows)
 
         # close the connection
@@ -233,7 +261,26 @@ def inputOverview():
 
     if request.method == "POST":
 
-        return sorry('')
+        # if fastq - perform QC
+        if request.form.get("pageChoice") == "fastq":
+            
+            # clear the temp directory
+            delete_files_in_directory(r"temp")
+
+            buildInputFile(r"temp", prefix=request.form.get("header"), data=request.form.get("content"), filetype=request.form.get("pageChoice"),  name="inputFile")
+
+            # run fastqp for QC analysis
+            filePath = rf"temp/inputFile.{request.form.get("pageChoice")}"
+            command = f"fastqc {filePath}"
+
+            os.system(command)
+
+            return sorry("Push your file to ORF: {} {}".format(request.form.get("header"), request.form.get("content")))
+
+        # if fasta - push it to ORF
+        else:
+
+            return sorry(request.form.get("pageChoice") + request.form.get("header") + request.form.get("content"))
     
     else:
         
@@ -244,7 +291,6 @@ def inputOverview():
 
         fastxReadList = []
         header = ''
-        data = ''
                         
         # read each fasta read into memory
         with open(workFile, 'r') as f:
@@ -273,9 +319,6 @@ def inputOverview():
         # dump the last read into the dict
         read = [header, data]
         fastxReadList.append(read)
-
-        print(fastxReadList)
-
 
         # render template that shows the quality control check and all the required info    
         return render_template("inputOverview.html", fastxReadList=fastxReadList, pageChoice=pageChoice)       

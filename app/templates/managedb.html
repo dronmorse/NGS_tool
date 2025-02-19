@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    Remove unwanted entries from the database
+{% endblock %}
+
+
+{% block body %}
+    <h1>Remove unwanted entries from the database</h1>
+
+    <div class="accordion" id="accordion">
+        {% for row in rowsList %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#{{ loop.index }}" aria-expanded="true" aria-controls="{{ loop.index }}">
+                        <div class="accordion-file">{{ row[1] }}</div>
+                    </button>
+                </h2>
+                <div id="{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#accordion">
+                    <div class="accordion-body">
+                        <form action="/managedb" method="POST">
+                            <input type="hidden" id="{{ row[0] }}" name="id" value="{{ row[0] }}">
+                            <button class="btn btn-danger" type="submit">Drop this entry from database</button>
+                        </form>
+                        <div class="honor-newline">
+                            <strong>File type: {{ row[3] }}</strong> <br> {{ row[2] }} 
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>  
+{% endblock %}

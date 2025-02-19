@@ -6,28 +6,29 @@
 
 
 {% block body %}
-    <h1>Choose from among the stored files:</h1>
+  <h1>Choose from among the stored files:</h1>
 
-    <div class="accordion" id="accordion">
-      {% for row in rowsList %}
-        
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#{{ loop.index }}" aria-expanded="true" aria-controls="{{ loop.index }}">
-              {{ row[1] }}
-            </button>
-          </h2>
-          <div id="{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#accordion">
-            <div class="accordion-body">
-              <form action="/browseseq" method="POST">
-                <input type="hidden" id="{{ row[0] }}" name="id" value="{{ row[0] }}">
-                <input type="hidden" id="{{ row[3] }}" name="filetype" value="{{ row[3] }}">
-                <button class="btn btn-primary" type="submit">Pick this sequence</button>
-              </form>
+  <div class="accordion" id="accordion">
+    {% for row in rowsList %}
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#{{ loop.index }}" aria-expanded="true" aria-controls="{{ loop.index }}">
+            <div class="accordion-file">{{ row[1] }}</div>
+          </button>
+        </h2>
+        <div id="{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#accordion">
+          <div class="accordion-body">
+            <form action="/browseseq" method="POST">
+              <input type="hidden" id="{{ row[0] }}" name="id" value="{{ row[0] }}">
+              <input type="hidden" id="{{ row[3] }}" name="filetype" value="{{ row[3] }}">
+              <button class="btn btn-primary" type="submit">Pick this sequence</button>
+            </form>
+            <div class="honor-newline">
               <strong>File type: {{ row[3] }}</strong> <br> {{ row[2] }} 
             </div>
           </div>
         </div>
-      {% endfor %}
-    </div>  
+      </div>
+    {% endfor %}
+  </div>  
 {% endblock %}

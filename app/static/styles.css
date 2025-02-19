@@ -42,4 +42,12 @@ h3 {
     margin-right: auto;
     width: 50%;
 }
-  
+
+.accordion-file{
+    font-size: 25px;
+    line-height: 60px; 
+}
+
+.honor-newline {
+    white-space: pre-line;
+}
