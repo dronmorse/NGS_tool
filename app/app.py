@@ -185,6 +185,7 @@ def DNAtoPROTEIN():
 
         return render_template("DNAtoPROTEIN.html")
 
+# for both FASTA and FASTQ!
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
@@ -194,8 +195,9 @@ def upload():
         seq = request.files['upload']
 
         # check if the file is indeed in .fasta or .fastq format
-        if seq.filename[-5:] not in ['fasta', 'fastq']:
-            return sorry(text="Please provide a proper FASTA/FASTQ file")
+        if seq.filename[-5:] != request.form.get("filetype"):
+
+            return sorry(text="Please provide a proper file!")
 
         # save the file to temp
         path = r"temp/{}".format(seq.filename)
@@ -210,11 +212,12 @@ def upload():
         seqtoDB(path, seq.filename, session["user_id"])
 
         return redirect("/inputOverview")
-    
+            
     else:
 
-        return render_template("upload.html") 
+        return render_template(f"upload{request.args.get("filetype").upper()}.html", filetype=request.args.get("filetype")) 
 
+# for both FASTA and FASTQ!
 @app.route("/browseseq", methods=["GET", "POST"])
 @login_required
 def chooseDatabase():
@@ -226,13 +229,13 @@ def chooseDatabase():
         db = con.cursor()
 
         # fetch data from database
-        rowTemp = db.execute("SELECT content FROM seq WHERE id = ?;", (request.form.get("id"),))
+        rowTemp = db.execute("SELECT content FROM seq WHERE id = ? AND filetype LIKE ?;", (request.form.get("id"),request.form.get("filetype")))
         row = list(rowTemp)
 
         # close the connection
         con.close()
 
-        # delete everything from prevous sessions and create a new file
+        # delete everything from previous sessions and create a new file
         delete_files_in_directory(r"temp")
 
         with open(r"temp/temp.{}".format(request.form.get("filetype")), "a") as f:
@@ -249,23 +252,37 @@ def chooseDatabase():
         db = con.cursor()
 
         # fetch data from database
-        rows = db.execute("SELECT id, name, content, filetype FROM seq;")
+        rows = db.execute("SELECT id, name, content, filetype FROM seq WHERE filetype LIKE ?;", (request.args.get('filetype'), ))
+        
         rowsList = list(rows)
 
         # close the connection
         con.close()
 
-        return render_template("browseseq.html", rowsList=rowsList)
+        return render_template("browseseq.html", rowsList=rowsList, filetype=request.args.get("filetype"))
 
+# for both FASTA and FASTQ!
 @app.route("/inputOverview", methods=["GET", "POST"])
 @login_required
 def inputOverview():
 
     if request.method == "POST":
 
-        # if fastq - perform QC
         if request.form.get("pageChoice") == "fastq":
-            
+        
+            # rename the file to uniform name
+            os.system("mv temp/temp.fastq temp/inputFile.fastq")
+
+            # run fastqp for QC analysis
+            filePath = rf"temp/inputFile.{request.form.get("pageChoice")}"
+            command = f"fastqc {filePath}"
+
+            os.system(command)
+
+            return sorry("Push your file to ORF: {} {}".format(request.form.get("header"), request.form.get("content")))
+
+        else:
+
             # clear the temp directory
             delete_files_in_directory(r"temp")
 
@@ -277,13 +294,8 @@ def inputOverview():
 
             os.system(command)
 
-            return sorry("Push your file to ORF: {} {}".format(request.form.get("header"), request.form.get("content")))
-
-        # if fasta - push it to ORF
-        else:
-
             return sorry(request.form.get("pageChoice") + request.form.get("header") + request.form.get("content"))
-    
+        
     else:
         
         # prepare necessary variables
@@ -294,7 +306,7 @@ def inputOverview():
         fastxReadList = []
         header = ''
                         
-        # read each fasta read into memory
+        # read each read into memory
         with open(workFile, 'r') as f:
 
             for line in f.readlines():
@@ -321,6 +333,5 @@ def inputOverview():
         # dump the last read into the dict
         read = [header, data]
         fastxReadList.append(read)
-
         # render template that shows the quality control check and all the required info    
-        return render_template("inputOverview.html", fastxReadList=fastxReadList, pageChoice=pageChoice)       
+        return render_template("inputOverview.html", fastxReadList=fastxReadList, filetype=workFile[-5:], pageChoice=pageChoice, file=os.listdir(r"temp/")[0])       

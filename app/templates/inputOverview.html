@@ -6,10 +6,17 @@
 
 
 {% block body %}
-    <h1>Choose the read you want to use for further analysis </h1>
-    <h3>If your file has only one read, choose it and continue</h3>
+    <h1>File preview for further analysis</h1>
 
-    <div class="accordion" id="accordion">
+    {% if filetype == "fasta" %}
+      <h3>If your FASTA file contains more than one sequence, choose the proper one</h3>
+    {% else %}
+      <h3>Review your FASTQ file before analysis</h3>
+    {% endif %}
+
+    {% if filetype == "fasta" %}
+      <div class="accordion" id="accordion">
+
         {% for read in fastxReadList %}
           
           <div class="accordion-item">
@@ -26,14 +33,49 @@
                   <input type="hidden" id="{{ pageChoice }}" name="pageChoice" value="{{ pageChoice }}">
                   <button class="btn btn-primary" type="submit">Pick this read</button>
                 </form>
+                <form action="/inputOverview" method="POST">
                 <div class="honor-newline">
                   {{ read[1] }}
                 </div>
               </div>
             </div>
           </div>
+
         {% endfor %}
+
       </div>
 
+      {% else %}
+
+        <div class="accordion" id="accordion">
+
+          <form action="/inputOverview" method="POST">
+            <input type="hidden" id="{{ pageChoice }}" name="pageChoice" value="{{ pageChoice }}">
+            <button class="btn btn-primary" type="submit">Pick this read</button>
+          </form>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#1" aria-expanded="true" aria-controls="1">
+                <strong>{{ file }}</strong>
+              </button>
+            </h2>
+              <div id="1" class="accordion-collapse collapse" data-bs-parent="#accordion">
+                <div class="accordion-body">
+                  <form action="/inputOverview" method="POST">
+                  <div class="honor-newline">
+                    {% for read in fastxReadList %}
+                      {{ read[0] }}
+                      {{ read[1] }}
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>  
+          </div>
+
+          
+          
+        </div>
+      {% endif %}     
+    
 
 {% endblock %}
