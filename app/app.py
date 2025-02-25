@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import Bio.Blast
+import Bio.SeqIO
 from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
 import sqlite3
@@ -288,11 +290,23 @@ def inputOverview():
 
             buildInputFile(r"temp", prefix=request.form.get("header"), data=request.form.get("content"), filetype=request.form.get("pageChoice"),  name="inputFile")
 
-            # run fastqp for QC analysis
-            filePath = rf"temp/inputFile.{request.form.get("pageChoice")}"
-            command = f"fastqc {filePath}"
+            # getting the sequence (necessary, as SeqIO.parse returns an iterator)
+            sequence = Bio.SeqIO.read(r"temp/inputFile.fasta", "fasta")       
 
-            os.system(command)
+            # setting e-mail 
+            Bio.Blast.email = request.form.get("email")
+
+            # perform blastn BLAST against a core nuceotide database
+            print('Doing the BLAST and retrieving the results...')
+            result_stream = Bio.Blast.qblast("blastn", "core_nt", format(sequence, "fasta"))
+
+            # saving the output to HTML file HOW TO MAKE IT GRAPHICAL???
+            with open(r"temp/BLAST.xml", "wb") as out:
+                out.write(result_stream.read())
+            
+            # closing the stream
+            result_stream.close()
+
 
             return sorry(request.form.get("pageChoice") + request.form.get("header") + request.form.get("content"))
         

@@ -31,6 +31,8 @@
                   <input type="hidden" id="{{ read[0] }}" name="header" value="{{ read[0] }}">
                   <input type="hidden" id="{{ read[1] }}" name="content" value="{{ read[1] }}">
                   <input type="hidden" id="{{ pageChoice }}" name="pageChoice" value="{{ pageChoice }}">
+                  <label for="email">Enter your gmail for BLAST input:</label>
+                  <input type="email" id="email" pattern=".+@gmail\.com" size="30" required />
                   <button class="btn btn-primary" type="submit">Pick this read</button>
                 </form>
                 <form action="/inputOverview" method="POST">
