@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    FASTQC report anjalysis
+{% endblock %}
+
+
+{% block body %}
+    <h1>FASTQC report analysis</h1>
+    <div class="center-content">
+        <button class="btn btn-primary">Submit</button>
+    </div>
+    <div class="center-content">
+        <iframe src="/FASTQCReport" width=2000 height=1000 title="FASTQC report preview">
+    </div>
+{% endblock %}

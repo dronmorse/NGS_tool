@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import Bio.Blast
+from Bio.Blast import NCBIWWW
 import Bio.SeqIO
 from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
@@ -40,7 +41,7 @@ def index():
 
         # set name of the project and available pipelines
         project_title = "Welcome to DNA analysis tool!"
-        options = (("/DNAtoPROTEIN", "What does your DNA encode?"),)
+        options = (("/DNAtoPROTEIN", "What does your DNA encode?"), ("/FASTQAnalysis", "Peform quick analysis of a FASTQ file"))
 
         return render_template("index.html", project_title=project_title, options=options)
 
@@ -186,6 +187,16 @@ def DNAtoPROTEIN():
     if request.method == "GET":
 
         return render_template("DNAtoPROTEIN.html")
+    
+@app.route('/FASTQAnalysis', methods=['GET'])
+@login_required
+def FASTQAnalysis():
+
+    # render a welcome page for "What does you DNA encode?" pipeline
+    if request.method == "GET":
+
+        return render_template("FASTQAnalysis.html")
+
 
 # for both FASTA and FASTQ!
 @app.route('/upload', methods=['GET', 'POST'])
@@ -281,8 +292,8 @@ def inputOverview():
 
             os.system(command)
 
-            return sorry("Push your file to ORF: {} {}".format(request.form.get("header"), request.form.get("content")))
-
+            return render_template("FASTQCPreview.html")
+        
         else:
 
             # clear the temp directory
@@ -296,19 +307,42 @@ def inputOverview():
             # setting e-mail 
             Bio.Blast.email = request.form.get("email")
 
-            # perform blastn BLAST against a core nuceotide database
+            # perform blastn BLAST against a core nucleotide database
             print('Doing the BLAST and retrieving the results...')
-            result_stream = Bio.Blast.qblast("blastn", "core_nt", format(sequence, "fasta"))
+            # result_stream = Bio.Blast.qblast("blastn", "core_nt", format(sequence, "fasta"), format_type="XML")
+            result_stream = NCBIWWW.qblast("blastn", "nt", sequence.format("fasta"), format_type="HTML")
+            print("done")
 
-            # saving the output to HTML file HOW TO MAKE IT GRAPHICAL???
-            with open(r"temp/BLAST.xml", "wb") as out:
+            # saving the output to HTML file 
+            with open(r"temp/BLAST.html", "w") as out:
                 out.write(result_stream.read())
+            
+            # open the output to read the file
+            lines = []
+            with open(r"temp/BLAST.html", "r") as out:
+                lines = out.readlines()
+            
+            remove = True
+            # remove each line after the comment line
+            with open(r"temp/BLAST.html", "r+") as out:
+
+                for line in lines:
+
+                    if "The following is used for on screen sorting" in line:
+
+                        print ("Found!")
+
+                        remove  = False
+                    
+                    if remove:
+                    
+                        out.write(line)
             
             # closing the stream
             result_stream.close()
 
 
-            return sorry(request.form.get("pageChoice") + request.form.get("header") + request.form.get("content"))
+            return render_template("BLASTPreview.html")
         
     else:
         
@@ -348,4 +382,24 @@ def inputOverview():
         read = [header, data]
         fastxReadList.append(read)
         # render template that shows the quality control check and all the required info    
-        return render_template("inputOverview.html", fastxReadList=fastxReadList, filetype=workFile[-5:], pageChoice=pageChoice, file=os.listdir(r"temp/")[0])       
+        return render_template("inputOverview.html", fastxReadList=fastxReadList, filetype=workFile[-5:], pageChoice=pageChoice, file=os.listdir(r"temp/")[0])  
+
+@app.route("/FASTQCReport", methods=["GET"])
+@login_required
+def FASTQCReport():
+
+    # remove previous analysis and create a new one for preview
+    os.system("rm templates/inputFile_fastqc.html")
+    os.system("cp temp/inputFile_fastqc.html templates/")
+
+    return render_template("inputFile_fastqc.html")     
+
+@app.route("/BLASTReport", methods=["GET"])
+@login_required
+def BLASTReport():
+
+    # remove previous analysis and create a new one for preview
+    os.system("rm templates/BLAST.html")
+    os.system("cp temp/BLAST.html templates/")
+
+    return render_template("BLAST.html")   

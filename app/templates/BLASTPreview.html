@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    BLAST report anjalysis
+{% endblock %}
+
+
+{% block body %}
+    <h1>BLAST report analysis</h1>
+    <div class="center-content">
+        <button class="btn btn-primary">Submit</button>
+    </div>
+    <div class="center-content">
+        <iframe src="/BLASTReport" width=3000 height=1000 title="BLAST report preview">
+    </div>
+{% endblock %}

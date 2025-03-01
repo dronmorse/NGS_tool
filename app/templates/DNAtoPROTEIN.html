@@ -13,17 +13,12 @@
         Do not look any further! This pipeline: 
     </p>
     <ul>
-        <li>takes a FASTQ file as input or performs a test using one of the saved FASTQ files. Saves the data into a local database for later usage.</li>
-        <ul>
-            <li>One can also choose FASTA over FASTQ, but then the Quality Control step is entirely  bypassed</li>
-        </ul>
-        <li> performs Quality Control using FastQC and returns a report. Allows the user to retrieve the report and make a decision if the final Quality is sufficient to proceed with the calculation.</li>
-        <li>Reads the ORFs and returns the corresponding protein sequences. If no ORF is found, provided fragment is translated left to right in an effort to find a possible protein structure. The user will be asked to choose a protein sequence of interest. It is possible to check is sequence one by one.</li>
-        <li>The protein sequence gets annotated with functional and structrual infromation. </li>
-        <li>The final sequence is uploaded to NCBI BLASTP server for homology assessment and a report is returned with a possible protein which is encoded by the input.</li>
+        <li>takes a FASTA file as input or performs a test using one of the saved FASTA files. Saves the data into a local database for later usage.</li>
+        <li>If a file consists multiple sequences separated by headers, the user will be asked to choose only one sequence for analysis</li>
+        <li>The final sequence is uploaded to NCBI BLASTN server for homology assessment and a report is returned with a possible protein which is encoded by the input.</li>
     </ul>
 
-    <h2>Upload a FASTQ/FASTA file or choose one from a database</h2>
+    <h2>Upload a FASTA file or choose one from a database</h2>
 
 
     <div class="container">

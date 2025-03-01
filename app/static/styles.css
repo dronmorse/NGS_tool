@@ -43,6 +43,11 @@ h3 {
     width: 50%;
 }
 
+.center-content {
+    display: flex;
+    justify-content: center;
+}
+
 .accordion-file{
     font-size: 25px;
     line-height: 60px; 
