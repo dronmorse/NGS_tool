@@ -23,6 +23,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
+
 @app.after_request
 def after_request(response):
 
@@ -284,7 +285,7 @@ def inputOverview():
         if request.form.get("pageChoice") == "fastq":
         
             # rename the file to uniform name
-            os.system("mv temp/temp.fastq temp/inputFile.fastq")
+            os.system("mv temp/*.fastq temp/inputFile.fastq")
 
             # run fastqp for QC analysis
             filePath = rf"temp/inputFile.{request.form.get("pageChoice")}"
@@ -309,8 +310,9 @@ def inputOverview():
 
             # perform blastn BLAST against a core nucleotide database
             print('Doing the BLAST and retrieving the results...')
+            
             # result_stream = Bio.Blast.qblast("blastn", "core_nt", format(sequence, "fasta"), format_type="XML")
-            result_stream = NCBIWWW.qblast("blastn", "nt", sequence.format("fasta"), format_type="HTML")
+            result_stream = NCBIWWW.qblast("blastn", "nt", sequence.format("fasta"), format_type="HTML", hitlist_size=50)
             print("done")
 
             # saving the output to HTML file 
@@ -323,8 +325,8 @@ def inputOverview():
                 lines = out.readlines()
             
             remove = True
-            # remove each line after the comment line
-            with open(r"temp/BLAST.html", "r+") as out:
+            # remove each line after the comment line and after the alignment table
+            with open(r"temp/BLAST.html", "w") as out:
 
                 for line in lines:
 
@@ -332,9 +334,13 @@ def inputOverview():
 
                         print ("Found!")
 
-                        remove  = False
+                        remove = False
                     
-                    if remove:
+                    elif "Scroll descriptions table to the right" in line:
+
+                        remove = True
+                    
+                    if not remove:
                     
                         out.write(line)
             
@@ -381,6 +387,7 @@ def inputOverview():
         # dump the last read into the dict
         read = [header, data]
         fastxReadList.append(read)
+        
         # render template that shows the quality control check and all the required info    
         return render_template("inputOverview.html", fastxReadList=fastxReadList, filetype=workFile[-5:], pageChoice=pageChoice, file=os.listdir(r"temp/")[0])  
 

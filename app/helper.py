@@ -2,7 +2,6 @@
 
 from flask import render_template, session, redirect
 from functools import wraps
-import Bio
 import os
 import sqlite3
 

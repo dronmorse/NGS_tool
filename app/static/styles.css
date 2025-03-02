@@ -19,11 +19,20 @@ h3 {
     line-height: 50px; 
 }
 
+body {
+    background-color: #5f2043;
+    font-family: Arial;
+    color: white;
+}
+
+.bg-custom {
+    background-color: #676767;
+}
+
 .container{
     position: relative;
     height: 100%;
    }
-
 
 .button-wrapper {
     display: inline-block;

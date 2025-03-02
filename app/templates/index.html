@@ -17,7 +17,7 @@
          {% for option in options %}
             <form action="{{ option[0] }}" method="GET">
                <input type="hidden" name="{{ option[1] }}" value="{{ option[0] }}">
-               <button class="mx-auto w-auto d-flex justify-content-center space-above list-group-item btn btn-primary" type="submit">{{ option[1] }}</button>
+               <button class="mx-auto w-auto d-flex justify-content-center space-above list-group-item btn btn-primary active" type="submit">{{ option[1] }}</button>
             </form>
          {% endfor %}
        </ul>

@@ -7,9 +7,23 @@
 
 {% block body %}
     <h1>BLAST report analysis</h1>
-    <div class="center-content">
-        <button class="btn btn-primary">Submit</button>
+    <div class="center-content italicized">
+        <h5>Citation: Camacho, C., Coulouris, G., Avagyan, V., Ma, N., Papadopoulos, J., Bealer, K., and Madden, T.L. 2009. BLAST+: architecture and applications. BMC Bioinformatics, 10, 421.</h5>
     </div>
+    <br>
+    <div class="center-content ">
+        <form action="/" method="GET" >
+            <input type="hidden" name="home">
+            <button class="btn btn-primary btn-lg" type="submit">Take me back to the home page</button>
+        </form>
+    </div>
+    <br>
+    <div class="center-content">
+        <a href="/BLASTReport" download> 
+            <button class="btn btn-success btn-lg">Click here to download the report</button>
+        </a>
+    </div>
+    <br>
     <div class="center-content">
         <iframe src="/BLASTReport" width=3000 height=1000 title="BLAST report preview">
     </div>
