@@ -243,7 +243,7 @@ def chooseDatabase():
         db = con.cursor()
 
         # fetch data from database
-        rowTemp = db.execute("SELECT content FROM seq WHERE id = ? AND filetype LIKE ?;", (request.form.get("id"),request.form.get("filetype")))
+        rowTemp = db.execute("SELECT content FROM seq WHERE user_id = ? AND filetype LIKE ?;", (session["user_id"],request.form.get("filetype")))
         row = list(rowTemp)
 
         # close the connection
@@ -266,7 +266,7 @@ def chooseDatabase():
         db = con.cursor()
 
         # fetch data from database
-        rows = db.execute("SELECT id, name, content, filetype FROM seq WHERE filetype LIKE ?;", (request.args.get('filetype'), ))
+        rows = db.execute("SELECT id, name, content, filetype FROM seq WHERE filetype LIKE ? AND user_id = ?;", (request.args.get('filetype'), session["user_id"]))
         
         rowsList = list(rows)
 
